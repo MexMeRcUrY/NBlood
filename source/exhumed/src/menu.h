@@ -14,8 +14,10 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
-//-------------------------------------------------------------------------
-
+//
+//MERCURY-------------------------------------------------------------------------
+//#define NUMGAMEFUNCTIONS 55
+//#define MAXGAMEFUNCLEN 32
 #ifndef __menu_h__
 #define __menu_h__
 
@@ -38,6 +40,8 @@ struct GameStat
     short nLives;
 };
 #pragma pack()
+//mercury
+//extern char gamefunctions[NUMGAMEFUNCTIONS][MAXGAMEFUNCLEN];
 
 extern GameStat GameStats;
 

@@ -16,39 +16,39 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 //-------------------------------------------------------------------------
 
-#include "compat.h"
-#include "build.h"
-#include "exhumed.h"
-#include "typedefs.h"
-#include "player.h"
-#include "sequence.h"
 #include "menu.h"
-#include "names.h"
+
+#include "build.h"
+#include "cd.h"
+#include "compat.h"
 #include "engine.h"
-#include "keyboard.h"
-#include "status.h"
-#include "random.h"
-#include "sound.h"
-#include "names.h"
+#include "exhumed.h"
+#include "gun.h"
 #include "init.h"
 #include "input.h"
-#include "gun.h"
-#include "view.h"
-#include "object.h"
+#include "keyboard.h"
 #include "light.h"
-#include "cd.h"
-#include <string>
+#include "names.h"
+#include "object.h"
+#include "player.h"
+#include "random.h"
+#include "sequence.h"
+#include "sound.h"
+#include "status.h"
+#include "typedefs.h"
+#include "view.h"
 
 #include <assert.h>
+#include <string>
 
 #ifdef __WATCOMC__
 #include <stdlib.h>
 #endif
 
-#define kSaveFileName       "savgamea.sav"
-#define kMaxSaveSlots		5
-#define kMaxSaveSlotChars	25
 
+#define kSaveFileName "savgamea.sav"
+#define kMaxSaveSlots 5
+#define kMaxSaveSlotChars 25
 GameStat GameStats;
 
 short nCinemaSeen[30];
@@ -56,11 +56,11 @@ short nCinemaSeen[30];
 // this might be static within the DoPlasma function?
 uint8_t plasmaBuffer[25600];
 
-uint8_t energytile[66 * 66] = {0};
+uint8_t energytile[66 * 66] = { 0 };
 
 uint8_t cinemapal[768];
-short nLeft[50] = {0};
-int line;
+short   nLeft[50] = { 0 };
+int     line;
 
 short SavePosition = -1;
 
@@ -72,42 +72,42 @@ unsigned int nSmokeRight;
 unsigned int nSmokeTop;
 unsigned int nSmokeLeft;
 
-unsigned int nRandom = 0x41C6167E;
-int dword_9AB57 = 0x1F;
-short word_9AB5B = 0;
+unsigned int nRandom     = 0x41C6167E;
+int          dword_9AB57 = 0x1F;
+short        word_9AB5B  = 0;
 
 int keytimer = 0;
 
-int plasma_A[5] = {0};
-int plasma_B[5] = {0};
-int plasma_C[5] = {0};
-
-short nMenuKeys[] = { sc_N, sc_L, sc_M, sc_V, sc_Q, sc_None }; // select a menu item using the keys. 'N' for New Gane, 'V' for voume etc. 'M' picks Training for some reason...
+int plasma_A[5] = { 0 };
+int plasma_B[5] = { 0 };
+int plasma_C[5] = { 0 };
+//mercury sc_O
+short nMenuKeys[]
+= { sc_N, sc_L, sc_M, sc_V, sc_Q, sc_O, sc_None };  // select a menu item using the keys. 'N' for New Gane, 'V' for voume etc. 'M' picks Training for some reason...
 
 int zoomsize = 0;
 
 void menu_ResetKeyTimer();
 
-enum {
+enum
+{
     kMenuNewGame = 0,
     kMenuLoadGame,
     kMenuTraining,
     kMenuVolume,
     kMenuQuitGame,
+    kMenuOptions,  //mercury
     kMenuMaxItems
 };
 
 
-void ClearCinemaSeen()
-{
-    memset(nCinemaSeen, 0, sizeof(nCinemaSeen));
-}
+void ClearCinemaSeen() { memset(nCinemaSeen, 0, sizeof(nCinemaSeen)); }
 
 unsigned int menu_RandomBit2()
 {
     unsigned int result = nRandom & 1;
 
-    if ( --dword_9AB57 > 0 )
+    if (--dword_9AB57 > 0)
     {
         nRandom = (result << 31) | (nRandom >> 1);
     }
@@ -133,10 +133,7 @@ int menu_RandomLong2()
     return randLong;
 }
 
-void InitEnergyTile()
-{
-    memset(energytile, 96, sizeof(energytile));
-}
+void InitEnergyTile() { memset(energytile, 96, sizeof(energytile)); }
 
 void DoEnergyTile()
 {
@@ -145,8 +142,8 @@ void DoEnergyTile()
 
     nButtonColor += nButtonColor < 0 ? 8 : 0;
 
-    uint8_t *ptr1 = (uint8_t*)(waloff[kEnergy1] + 1984);
-    uint8_t *ptr2 = (uint8_t*)(waloff[kEnergy1] + 2048);
+    uint8_t *ptr1 = (uint8_t *)(waloff[kEnergy1] + 1984);
+    uint8_t *ptr2 = (uint8_t *)(waloff[kEnergy1] + 2048);
 
     short nColor = nButtonColor + 161;
 
@@ -162,7 +159,8 @@ void DoEnergyTile()
 
         nColor++;
 
-        if (nColor >= 168) {
+        if (nColor >= 168)
+        {
             nColor = 160;
         }
     }
@@ -171,8 +169,8 @@ void DoEnergyTile()
 
     if (nSmokeSparks)
     {
-        uint8_t *c = &energytile[67]; // skip a line
-        uint8_t *ptrW = (uint8_t*)waloff[kEnergy2];
+        uint8_t *c    = &energytile[67];  // skip a line
+        uint8_t *ptrW = (uint8_t *)waloff[kEnergy2];
 
         for (i = 0; i < 64; i++)
         {
@@ -182,16 +180,19 @@ void DoEnergyTile()
 
                 if (val != 96)
                 {
-                    if (val > 158) {
+                    if (val > 158)
+                    {
                         *ptrW = val - 1;
                     }
-                    else {
+                    else
+                    {
                         *ptrW = 96;
                     }
                 }
                 else
                 {
-                    if (menu_RandomBit2()) {
+                    if (menu_RandomBit2())
+                    {
                         *ptrW = *c;
                     }
                     else
@@ -199,56 +200,65 @@ void DoEnergyTile()
                         uint8_t al = *(c + 1);
                         uint8_t ah = *(c - 1);
 
-                        if (al <= ah) {
+                        if (al <= ah)
+                        {
                             al = ah;
                         }
 
                         uint8_t cl = al;
 
                         al = *(c - 66);
-                        if (cl <= al) {
+                        if (cl <= al)
+                        {
                             cl = al;
                         }
 
                         al = *(c + 66);
-                        if (cl <= al) {
+                        if (cl <= al)
+                        {
                             cl = al;
                         }
 
                         al = *(c + 66);
-                        if (cl <= al) {
+                        if (cl <= al)
+                        {
                             cl = al;
                         }
 
                         al = *(c + 66);
-                        if (cl <= al) {
+                        if (cl <= al)
+                        {
                             cl = al;
                         }
 
                         al = *(c - 65);
-                        if (cl <= al) {
+                        if (cl <= al)
+                        {
                             cl = al;
                         }
 
                         al = *(c - 67);
-                        if (cl > al) {
+                        if (cl > al)
+                        {
                             al = cl;
                         }
 
                         cl = al;
 
-                        if (al <= 159) {
+                        if (al <= 159)
+                        {
                             *ptrW = 96;
                         }
                         else
                         {
-                            if (!menu_RandomBit2()) {
+                            if (!menu_RandomBit2())
+                            {
                                 cl--;
                             }
 
                             *ptrW = cl;
                         }
-                    }     
+                    }
                 }
 
                 c++;
@@ -258,8 +268,8 @@ void DoEnergyTile()
             c += 2;
         }
 
-        c = &energytile[67];
-        ptrW = (uint8_t*)waloff[kEnergy2];
+        c    = &energytile[67];
+        ptrW = (uint8_t *)waloff[kEnergy2];
 
         // copy back to energytile[]
         for (i = 0; i < 64; i++)
@@ -269,13 +279,14 @@ void DoEnergyTile()
             ptrW += 64;
         }
 
-        ptrW = (uint8_t*)waloff[kEnergy2];
+        ptrW = (uint8_t *)waloff[kEnergy2];
 
         // kEnergy2 is 64 x 64
         for (i = 0; i < 4096; i++)
         {
-            if (ptrW[i] == 96) {
-                ptrW[i] = 255; // -1?
+            if (ptrW[i] == 96)
+            {
+                ptrW[i] = 255;  // -1?
             }
         }
 
@@ -293,7 +304,7 @@ void DoEnergyTile()
             assert(val < 4356);
 
             energytile[val] = 175;
-            word_9AB5B = 1;
+            word_9AB5B      = 1;
         }
         tileInvalidate(kEnergy2, -1, -1);
     }
@@ -302,8 +313,8 @@ void DoEnergyTile()
 int nPlasmaTile = kTile4092;
 int nLogoTile;
 
-#define kPlasmaWidth	320
-#define kPlasmaHeight	80
+#define kPlasmaWidth 320
+#define kPlasmaHeight 80
 
 void menu_DoPlasma()
 {
@@ -313,12 +324,12 @@ void menu_DoPlasma()
     {
         tileCreate(kTile4092, kPlasmaWidth, kPlasmaHeight);
 
-        memset((void*)waloff[kTile4092], 96, kPlasmaWidth*kPlasmaHeight);
+        memset((void *)waloff[kTile4092], 96, kPlasmaWidth * kPlasmaHeight);
 
         waloff[kTile4093] = (intptr_t)plasmaBuffer;
         memset(plasmaBuffer, 96, sizeof(plasmaBuffer));
 
-        nSmokeLeft = 160 - tilesiz[nLogoTile].x / 2;
+        nSmokeLeft  = 160 - tilesiz[nLogoTile].x / 2;
         nSmokeRight = nSmokeLeft + tilesiz[nLogoTile].x;
 
         tilesiz[kTile4093].x = kPlasmaWidth;
@@ -338,7 +349,7 @@ void menu_DoPlasma()
             plasma_C[i] = (nSmokeLeft + rand() % logoWidth) << 16;
             plasma_B[i] = (menu_RandomLong2() % 327680) + 0x10000;
 #else
-            int r = rand();
+            int r     = rand();
             int rand2 = menu_RandomLong2();
 
             __asm {
@@ -355,14 +366,16 @@ void menu_DoPlasma()
                 mov     plasma_C[ebx * 4], edx
                 xor     edx, edx
                 mov		eax, rand2
-//				call    menu_RandomLong2
+                    //				call    menu_RandomLong2
                 div     ecx
                 add     edx, 10000h
                 mov     plasma_B[ebx * 4], edx
-            };
+            }
+            ;
 #endif
 
-            if (menu_RandomBit2()) {
+            if (menu_RandomBit2())
+            {
                 plasma_B[i] = -plasma_B[i];
             }
 
@@ -372,29 +385,32 @@ void menu_DoPlasma()
 
     videoClearScreen(overscanindex);
 
-    uint8_t *r_ebx = (uint8_t*)waloff[nPlasmaTile] + 81;
-    uint8_t *r_edx = (uint8_t*)waloff[nPlasmaTile ^ 1] + 81; // flip between value of 4092 and 4093 with xor
+    uint8_t *r_ebx = (uint8_t *)waloff[nPlasmaTile] + 81;
+    uint8_t *r_edx = (uint8_t *)waloff[nPlasmaTile ^ 1] + 81;  // flip between value of 4092 and 4093 with xor
 
     for (int x = 0; x < kPlasmaWidth - 2; x++)
-//	for (int x = 1; x < 318; x++)
+    //	for (int x = 1; x < 318; x++)
     {
-//		for (int y = 1; y < 79; y++)
+        //		for (int y = 1; y < 79; y++)
         for (int y = 0; y < kPlasmaHeight - 2; y++)
         {
             uint8_t al = *r_edx;
 
             if (al != 96)
             {
-                if (al > 158) {
+                if (al > 158)
+                {
                     *r_ebx = al - 1;
                 }
-                else {
+                else
+                {
                     *r_ebx = 96;
                 }
             }
             else
             {
-                if (menu_RandomBit2()) {
+                if (menu_RandomBit2())
+                {
                     *r_ebx = *r_edx;
                 }
                 else
@@ -402,49 +418,58 @@ void menu_DoPlasma()
                     uint8_t al = *(r_edx + 1);
                     uint8_t cl = *(r_edx - 1);
 
-                    if (al <= cl) {
+                    if (al <= cl)
+                    {
                         al = cl;
                     }
 
                     cl = al;
                     al = *(r_edx - 80);
-                    if (cl <= al) {
+                    if (cl <= al)
+                    {
                         cl = al;
                     }
 
                     al = *(r_edx + 80);
-                    if (cl <= al) {
+                    if (cl <= al)
+                    {
                         cl = al;
                     }
 
                     al = *(r_edx + 80);
-                    if (cl <= al) {
+                    if (cl <= al)
+                    {
                         cl = al;
                     }
 
                     al = *(r_edx + 80);
-                    if (cl <= al) {
+                    if (cl <= al)
+                    {
                         cl = al;
                     }
 
                     al = *(r_edx - 79);
-                    if (cl > al) {
+                    if (cl > al)
+                    {
                         al = cl;
                     }
 
                     cl = *(r_edx - 81);
-                    if (al <= cl) {
+                    if (al <= cl)
+                    {
                         al = cl;
                     }
 
                     cl = al;
 
-                    if (al <= 159) {
+                    if (al <= 159)
+                    {
                         *r_ebx = 96;
                     }
                     else
                     {
-                        if (!menu_RandomBit2()) {
+                        if (!menu_RandomBit2())
+                        {
                             cl--;
                         }
 
@@ -467,17 +492,17 @@ void menu_DoPlasma()
 
     for (int j = 0; j < 5; j++)
     {
-        int pB = plasma_B[j];
-        int pC = plasma_C[j];
-        int badOffset =  (pC>>16) < nSmokeLeft || (pC>>16) >= nSmokeRight;
+        int pB        = plasma_B[j];
+        int pC        = plasma_C[j];
+        int badOffset = (pC >> 16) < nSmokeLeft || (pC >> 16) >= nSmokeRight;
 
-        uint8_t *ptr3 = (uint8_t*)(waloff[nLogoTile] + ((pC >> 16) - nSmokeLeft) * tilesiz[nLogoTile].y);
+        uint8_t *ptr3 = (uint8_t *)(waloff[nLogoTile] + ((pC >> 16) - nSmokeLeft) * tilesiz[nLogoTile].y);
 
         plasma_C[j] += plasma_B[j];
 
         if ((pB > 0 && (plasma_C[j] >> 16) >= nSmokeRight) || (pB < 0 && (plasma_C[j] >> 16) <= nSmokeLeft))
         {
-            int esi = plasma_A[j];
+            int esi     = plasma_A[j];
             plasma_B[j] = -plasma_B[j];
             plasma_A[j] = esi == 0;
         }
@@ -494,7 +519,8 @@ void menu_DoPlasma()
             while (nSmokeOffset < nSmokeBottom)
             {
                 uint8_t al = *ptr3;
-                if (al != 255 && al != 96) {
+                if (al != 255 && al != 96)
+                {
                     break;
                 }
 
@@ -511,7 +537,8 @@ void menu_DoPlasma()
             while (nSmokeOffset > nSmokeTop)
             {
                 uint8_t al = *ptr3;
-                if (al != 255 && al != 96) {
+                if (al != 255 && al != 96)
+                {
                     break;
                 }
 
@@ -520,32 +547,35 @@ void menu_DoPlasma()
             }
         }
 
-        uint8_t *v28 = (uint8_t*)(80 * (plasma_C[j] >> 16) + waloff[nPlasmaTile]);
+        uint8_t *v28      = (uint8_t *)(80 * (plasma_C[j] >> 16) + waloff[nPlasmaTile]);
         v28[nSmokeOffset] = 175;
     }
 
-    tileInvalidate(nPlasmaTile,-1,-1);
+    tileInvalidate(nPlasmaTile, -1, -1);
 
-    overwritesprite(0,   0,  nPlasmaTile,  0, 2, kPalNormal);
+    overwritesprite(0, 0, nPlasmaTile, 0, 2, kPalNormal);
     overwritesprite(160, 40, nLogoTile, 0, 3, kPalNormal);
 
     // flip between tile 4092 and 4093
-    if (nPlasmaTile == kTile4092) {
+    if (nPlasmaTile == kTile4092)
+    {
         nPlasmaTile = kTile4093;
     }
-    else if (nPlasmaTile == kTile4093) {
+    else if (nPlasmaTile == kTile4093)
+    {
         nPlasmaTile = kTile4092;
     }
 
     // draw the fire urn/lamp thingies
-    int dword_9AB5F = ((int)totalclock/16) & 3;
+    int dword_9AB5F = ((int)totalclock / 16) & 3;
 
-    overwritesprite(50,  150, kTile3512 + dword_9AB5F, 0, 3, kPalNormal);
+    overwritesprite(50, 150, kTile3512 + dword_9AB5F, 0, 3, kPalNormal);
     overwritesprite(270, 150, kTile3512 + ((dword_9AB5F + 2) & 3), 0, 3, kPalNormal);
 
     // TEMP
     int time = (int)totalclock + 4;
-    while ((int)totalclock < time) {
+    while ((int)totalclock < time)
+    {
         HandleAsync();
     }
 }
@@ -563,41 +593,29 @@ struct TILEFRAMEDEF
 // 22 bytes
 struct MapNamePlaque
 {
-    short xPos;
-    short yPos;
+    short        xPos;
+    short        yPos;
     TILEFRAMEDEF tiles[2];
     TILEFRAMEDEF text;
 };
 
-MapNamePlaque mapNamePlaques[] = {
-    { 100, 170, kTile3376, 0, 0, kTile3377, 0, 0, kTile3411, 18, 6 },
-    { 230, 10,  kTile3378, 0, 0, kTile3379, 0, 0, kTile3414, 18, 6 }, // DENDUR (level 2)
-    { 180, 125, kTile3380, 0, 0, kTile3381, 0, 0, kTile3417, 18, 6 }, // Kalabash
-    { 10,  95,  kTile3382, 0, 0, kTile3383, 0, 0, kTile3420, 18, 6 },
-    { 210, 160, kTile3384, 0, 0, kTile3385, 0, 0, kTile3423, 18, 6 },
-    { 10,  110, kTile3371, 0, 0, kTile3386, 0, 0, kTile3426, 18, 6 },
-    { 10,  50,  kTile3387, 0, 0, kTile3388, 0, 0, kTile3429, 18, 6 },
-    { 140, 0,   kTile3389, 0, 0, kTile3390, 0, 0, kTile3432, 18, 6 },
-    { 30,  20,  kTile3391, 0, 0, kTile3392, 0, 0, kTile3435, 18, 6 },
-    { 200, 150, kTile3409, 0, 0, kTile3410, 0, 0, kTile3418, 20, 4 },
-    { 145, 170, kTile3393, 0, 0, kTile3394, 0, 0, kTile3438, 18, 6 },
-    { 80,  80,  kTile3395, 0, 0, kTile3396, 0, 0, kTile3441, 18, 6 },
-    { 15,  0,   kTile3397, 0, 0, kTile3398, 0, 0, kTile3444, 18, 5 },
-    { 220, 35,  kTile3399, 0, 0, kTile3400, 0, 0, kTile3447, 18, 6 },
-    { 190, 40,  kTile3401, 0, 0, kTile3402, 0, 0, kTile3450, 18, 6 },
-    { 20,  130, kTile3403, 0, 0, kTile3404, 0, 0, kTile3453, 19, 6 },
-    { 220, 160, kTile3405, 0, 0, kTile3406, 0, 0, kTile3456, 18, 6 },
-    { 20,  10,  kTile3407, 0, 0, kTile3408, 0, 0, kTile3459, 18, 6 },
-    { 200, 10,  kTile3412, 0, 0, kTile3413, 0, 0, kTile3419, 18, 5 },
-    { 20,  10,  kTile3415, 0, 0, kTile3416, 0, 0, kTile3421, 19, 4 }
-};
+MapNamePlaque mapNamePlaques[]
+= { { 100, 170, kTile3376, 0, 0, kTile3377, 0, 0, kTile3411, 18, 6 }, { 230, 10, kTile3378, 0, 0, kTile3379, 0, 0, kTile3414, 18, 6 },  // DENDUR (level 2)
+    { 180, 125, kTile3380, 0, 0, kTile3381, 0, 0, kTile3417, 18, 6 },                                                                   // Kalabash
+    { 10, 95, kTile3382, 0, 0, kTile3383, 0, 0, kTile3420, 18, 6 },   { 210, 160, kTile3384, 0, 0, kTile3385, 0, 0, kTile3423, 18, 6 },
+    { 10, 110, kTile3371, 0, 0, kTile3386, 0, 0, kTile3426, 18, 6 },  { 10, 50, kTile3387, 0, 0, kTile3388, 0, 0, kTile3429, 18, 6 },
+    { 140, 0, kTile3389, 0, 0, kTile3390, 0, 0, kTile3432, 18, 6 },   { 30, 20, kTile3391, 0, 0, kTile3392, 0, 0, kTile3435, 18, 6 },
+    { 200, 150, kTile3409, 0, 0, kTile3410, 0, 0, kTile3418, 20, 4 }, { 145, 170, kTile3393, 0, 0, kTile3394, 0, 0, kTile3438, 18, 6 },
+    { 80, 80, kTile3395, 0, 0, kTile3396, 0, 0, kTile3441, 18, 6 },   { 15, 0, kTile3397, 0, 0, kTile3398, 0, 0, kTile3444, 18, 5 },
+    { 220, 35, kTile3399, 0, 0, kTile3400, 0, 0, kTile3447, 18, 6 },  { 190, 40, kTile3401, 0, 0, kTile3402, 0, 0, kTile3450, 18, 6 },
+    { 20, 130, kTile3403, 0, 0, kTile3404, 0, 0, kTile3453, 19, 6 },  { 220, 160, kTile3405, 0, 0, kTile3406, 0, 0, kTile3456, 18, 6 },
+    { 20, 10, kTile3407, 0, 0, kTile3408, 0, 0, kTile3459, 18, 6 },   { 200, 10, kTile3412, 0, 0, kTile3413, 0, 0, kTile3419, 18, 5 },
+    { 20, 10, kTile3415, 0, 0, kTile3416, 0, 0, kTile3421, 19, 4 } };
 
 // 3 different types of fire, each with 4 frames
-TILEFRAMEDEF FireTiles[3][4] = {
-    {{ kTile3484,0,3 },{ kTile3485,0,0 },{ kTile3486,0,3 },{ kTile3487,0,0 }},
-    {{ kTile3488,1,0 },{ kTile3489,1,0 },{ kTile3490,0,1 },{ kTile3491,1,1 }},
-    {{ kTile3492,1,2 },{ kTile3493,1,0 },{ kTile3494,1,2 },{ kTile3495,1,0 }}
-};
+TILEFRAMEDEF FireTiles[3][4] = { { { kTile3484, 0, 3 }, { kTile3485, 0, 0 }, { kTile3486, 0, 3 }, { kTile3487, 0, 0 } },
+                                 { { kTile3488, 1, 0 }, { kTile3489, 1, 0 }, { kTile3490, 0, 1 }, { kTile3491, 1, 1 } },
+                                 { { kTile3492, 1, 2 }, { kTile3493, 1, 0 }, { kTile3494, 1, 2 }, { kTile3495, 1, 0 } } };
 
 struct Fire
 {
@@ -610,7 +628,7 @@ struct Fire
 struct MapFire
 {
     short nFires;
-    Fire fires[3];
+    Fire  fires[3];
 };
 
 /*
@@ -620,36 +638,24 @@ struct MapFire
 
 */
 
-MapFire MapLevelFires[] = {
-    3, {{0, 107, 95}, {1, 58,  140}, {2, 28,   38}},
-    3, {{2, 240,  0}, {0, 237,  32}, {1, 200,  30}},
-    2, {{2, 250, 57}, {0, 250,  43}, {2, 200,  70}},
-    2, {{1, 82,  59}, {2, 84,   16}, {0, 10,   95}},
-    2, {{2, 237, 50}, {1, 215,  42}, {1, 210,  50}},
-    3, {{0, 40,   7}, {1, 75,    6}, {2, 100,  10}},
-    3, {{0, 58,  61}, {1, 85,   80}, {2, 111,  63}},
-    3, {{0, 260, 65}, {1, 228,   0}, {2, 259,  15}},
-    2, {{0, 81,  38}, {2, 58,   38}, {2, 30,   20}},
-    3, {{0, 259, 49}, {1, 248,  76}, {2, 290,  65}},
-    3, {{2, 227, 66}, {0, 224,  98}, {1, 277,  30}},
-    2, {{0, 100, 10}, {2, 48,   76}, {2, 80,   80}},
-    3, {{0, 17,   2}, {1, 29,   49}, {2, 53,   28}},
-    3, {{0, 266, 42}, {1, 283,  99}, {2, 243, 108}},
-    2, {{0, 238, 19}, {2, 240,  92}, {2, 190,  40}},
-    2, {{0, 27,   0}, {1, 70,   40}, {0, 20,  130}},
-    3, {{0, 275, 65}, {1, 235,   8}, {2, 274,   6}},
-    3, {{0, 75,  45}, {1, 152, 105}, {2, 24,   68}},
-    3, {{0, 290, 25}, {1, 225,  63}, {2, 260, 110}},
-    0, {{1, 20,  10}, {1, 20,   10}, {1, 20,   10}}
-};
+MapFire MapLevelFires[] = { 3, { { 0, 107, 95 }, { 1, 58, 140 }, { 2, 28, 38 } },   3, { { 2, 240, 0 }, { 0, 237, 32 }, { 1, 200, 30 } },
+                            2, { { 2, 250, 57 }, { 0, 250, 43 }, { 2, 200, 70 } },  2, { { 1, 82, 59 }, { 2, 84, 16 }, { 0, 10, 95 } },
+                            2, { { 2, 237, 50 }, { 1, 215, 42 }, { 1, 210, 50 } },  3, { { 0, 40, 7 }, { 1, 75, 6 }, { 2, 100, 10 } },
+                            3, { { 0, 58, 61 }, { 1, 85, 80 }, { 2, 111, 63 } },    3, { { 0, 260, 65 }, { 1, 228, 0 }, { 2, 259, 15 } },
+                            2, { { 0, 81, 38 }, { 2, 58, 38 }, { 2, 30, 20 } },     3, { { 0, 259, 49 }, { 1, 248, 76 }, { 2, 290, 65 } },
+                            3, { { 2, 227, 66 }, { 0, 224, 98 }, { 1, 277, 30 } },  2, { { 0, 100, 10 }, { 2, 48, 76 }, { 2, 80, 80 } },
+                            3, { { 0, 17, 2 }, { 1, 29, 49 }, { 2, 53, 28 } },      3, { { 0, 266, 42 }, { 1, 283, 99 }, { 2, 243, 108 } },
+                            2, { { 0, 238, 19 }, { 2, 240, 92 }, { 2, 190, 40 } },  2, { { 0, 27, 0 }, { 1, 70, 40 }, { 0, 20, 130 } },
+                            3, { { 0, 275, 65 }, { 1, 235, 8 }, { 2, 274, 6 } },    3, { { 0, 75, 45 }, { 1, 152, 105 }, { 2, 24, 68 } },
+                            3, { { 0, 290, 25 }, { 1, 225, 63 }, { 2, 260, 110 } }, 0, { { 1, 20, 10 }, { 1, 20, 10 }, { 1, 20, 10 } } };
 
 int menu_DrawTheMap(int nLevel, int nLevelNew, int nLevelBest)
 {
     int i;
-    int x = 0;
-    int var_2C = 0;
+    int x            = 0;
+    int var_2C       = 0;
     int nIdleSeconds = 0;
-    int bFadeDone = kFalse;
+    int bFadeDone    = kFalse;
 
     int startTime = (int)totalclock;
 
@@ -662,37 +668,43 @@ int menu_DrawTheMap(int nLevel, int nLevelNew, int nLevelBest)
     nLevelNew--;
     nLevelBest--;
 
-    if (nLevel >= kMap20) { // max single player levels
+    if (nLevel >= kMap20)
+    {  // max single player levels
         return -1;
     }
 
-    if (nLevelNew >= kMap20) {
+    if (nLevelNew >= kMap20)
+    {
         return -1;
     }
 
-    if (nLevel < 0) {
+    if (nLevel < 0)
+    {
         nLevel = 0;
     }
 
-    if (nLevelNew < 0) {
+    if (nLevelNew < 0)
+    {
         nLevelNew = nLevel;
     }
 
-    int curYPos = MapLevelOffsets[nLevel] + (200 * (nLevel / 2));
+    int curYPos  = MapLevelOffsets[nLevel] + (200 * (nLevel / 2));
     int destYPos = MapLevelOffsets[nLevelNew] + (200 * (nLevelNew / 2));
 
-    if (curYPos < destYPos) {
+    if (curYPos < destYPos)
+    {
         var_2C = 2;
     }
 
-    if (curYPos > destYPos) {
+    if (curYPos > destYPos)
+    {
         var_2C = -2;
     }
 
     int runtimer = (int)totalclock;
 
     // Trim smoke in widescreen
-    vec2_t mapwinxy1 = windowxy1, mapwinxy2 = windowxy2;
+    vec2_t  mapwinxy1 = windowxy1, mapwinxy2 = windowxy2;
     int32_t width = mapwinxy2.x - mapwinxy1.x + 1, height = mapwinxy2.y - mapwinxy1.y + 1;
     if (3 * width > 4 * height)
     {
@@ -705,7 +717,7 @@ int menu_DrawTheMap(int nLevel, int nLevelNew, int nLevelBest)
     {
         HandleAsync();
 
-        videoClearScreen(overscanindex); // fix hall of mirrors when console renders offscreen in widescreen resolutions.
+        videoClearScreen(overscanindex);  // fix hall of mirrors when console renders offscreen in widescreen resolutions.
 
         if (((int)totalclock - startTime) / kTimerTicks)
         {
@@ -727,7 +739,7 @@ int menu_DrawTheMap(int nLevel, int nLevelNew, int nLevelBest)
         {
             int screenY = (i >> 1) * -200;
 
-            if (nLevelBest >= i) // check if the player has finished this level
+            if (nLevelBest >= i)  // check if the player has finished this level
             {
                 for (int j = 0; j < MapLevelFires[i].nFires; j++)
                 {
@@ -737,14 +749,13 @@ int menu_DrawTheMap(int nLevel, int nLevelNew, int nLevelBest)
                     int nFireType = MapLevelFires[i].fires[j].nFireType;
                     assert(nFireType >= 0 && nFireType < 3);
 
-                    int nTile = FireTiles[nFireType][nFireFrame].nTile;
+                    int nTile  = FireTiles[nFireType][nFireFrame].nTile;
                     int smokeX = MapLevelFires[i].fires[j].xPos + FireTiles[nFireType][nFireFrame].xOffs;
                     int smokeY = MapLevelFires[i].fires[j].yPos + FireTiles[nFireType][nFireFrame].yOffs + curYPos + screenY;
 
                     // Use rotatesprite to trim smoke in widescreen
-                    rotatesprite(smokeX << 16, smokeY << 16, 65536L, 0,
-                                 nTile, 0, kPalNormal, 16 + 2, mapwinxy1.x, mapwinxy1.y, mapwinxy2.x, mapwinxy2.y);
-//                    overwritesprite(smokeX, smokeY, nTile, 0, 2, kPalNormal);
+                    rotatesprite(smokeX << 16, smokeY << 16, 65536L, 0, nTile, 0, kPalNormal, 16 + 2, mapwinxy1.x, mapwinxy1.y, mapwinxy2.x, mapwinxy2.y);
+                    //                    overwritesprite(smokeX, smokeY, nTile, 0, 2, kPalNormal);
                 }
             }
 
@@ -771,7 +782,7 @@ int menu_DrawTheMap(int nLevel, int nLevelNew, int nLevelBest)
 
             int textY = mapNamePlaques[i].yPos + mapNamePlaques[i].text.yOffs + curYPos + screenY;
             int textX = mapNamePlaques[i].xPos + mapNamePlaques[i].text.xOffs;
-            nTile = mapNamePlaques[i].text.nTile;
+            nTile     = mapNamePlaques[i].text.nTile;
 
             // draw the text, alternating between red and black
             overwritesprite(textX, textY, nTile, shade, 2, kPalNormal);
@@ -797,10 +808,12 @@ int menu_DrawTheMap(int nLevel, int nLevelNew, int nLevelBest)
 
                     destYPos = MapLevelOffsets[nLevelNew] + (200 * (nLevelNew / 2));
 
-                    if (curYPos <= destYPos) {
+                    if (curYPos <= destYPos)
+                    {
                         var_2C = 2;
                     }
-                    else {
+                    else
+                    {
                         var_2C = -2;
                     }
 
@@ -819,10 +832,12 @@ int menu_DrawTheMap(int nLevel, int nLevelNew, int nLevelBest)
 
                     destYPos = MapLevelOffsets[nLevelNew] + (200 * (nLevelNew / 2));
 
-                    if (curYPos <= destYPos) {
+                    if (curYPos <= destYPos)
+                    {
                         var_2C = 2;
                     }
-                    else {
+                    else
+                    {
                         var_2C = -2;
                     }
 
@@ -834,34 +849,38 @@ int menu_DrawTheMap(int nLevel, int nLevelNew, int nLevelBest)
             {
                 KB_KeyDown[sc_Escape] = 0;
                 KB_KeyDown[sc_Return] = 0;
-                KB_KeyDown[sc_Space] = 0;
+                KB_KeyDown[sc_Space]  = 0;
                 return nLevelNew + 1;
             }
         }
         else
         {
             // scroll the map every couple of ms
-            if (totalclock - runtimer >= (kTimerTicks / 32)) {
+            if (totalclock - runtimer >= (kTimerTicks / 32))
+            {
                 curYPos += var_2C;
                 runtimer = (int)totalclock;
             }
 
             if (KB_KeyDown[sc_Escape] || KB_KeyDown[sc_Space] || KB_KeyDown[sc_Return])
             {
-                if (var_2C < 8) {
+                if (var_2C < 8)
+                {
                     var_2C *= 2;
                 }
 
                 KB_KeyDown[sc_Escape] = 0;
                 KB_KeyDown[sc_Return] = 0;
-                KB_KeyDown[sc_Space] = 0;
+                KB_KeyDown[sc_Space]  = 0;
             }
 
-            if (curYPos > destYPos&& var_2C > 0) {
+            if (curYPos > destYPos && var_2C > 0)
+            {
                 curYPos = destYPos;
             }
 
-            if (curYPos < destYPos && var_2C < 0) {
+            if (curYPos < destYPos && var_2C < 0)
+            {
                 curYPos = destYPos;
             }
 
@@ -876,7 +895,7 @@ int menu_DrawTheMap(int nLevel, int nLevelNew, int nLevelBest)
 void menu_AdjustVolume()
 {
     int nOption = 1;
-    int var_8 = 0;
+    int var_8   = 0;
 
     while (1)
     {
@@ -887,28 +906,21 @@ void menu_AdjustVolume()
         overwritesprite(80, 50, kMenuMusicTile, (Sin((int)totalclock << 4) >> 9) * (nOption == 0), 2, kPalNormal);
         overwritesprite(55, 75, kMenuBlankTitleTile, 0, 2, kPalNormal);
 
-        seq_DrawGunSequence(
-            SeqOffsets[kSeqSlider], // eax
-            gMusicVolume % 3, // pick one of 3 frames?
-            (gMusicVolume >> 1) - 93, // ebx. must be x???
-            -22,
-            0,
-            0);
+        seq_DrawGunSequence(SeqOffsets[kSeqSlider],    // eax
+                            gMusicVolume % 3,          // pick one of 3 frames?
+                            (gMusicVolume >> 1) - 93,  // ebx. must be x???
+                            -22,
+                            0,
+                            0);
 
         overwritesprite(80, 110, kMenuSoundFxTile, (Sin((int)totalclock << 4) >> 9) * (nOption == 1), 2, kPalNormal);
         overwritesprite(55, 135, kMenuBlankTitleTile, 0, 2, kPalNormal);
 
-        seq_DrawGunSequence(
-            SeqOffsets[kSeqSlider],
-            gFXVolume % 3,
-            (gFXVolume / 2) - 93,
-            38,
-            0,
-            0);
+        seq_DrawGunSequence(SeqOffsets[kSeqSlider], gFXVolume % 3, (gFXVolume / 2) - 93, 38, 0, 0);
 
         int y = (60 * nOption) + 38;
 
-        overwritesprite(60,  y, kMenuCursorTile, 0, 2, kPalNormal);
+        overwritesprite(60, y, kMenuCursorTile, 0, 2, kPalNormal);
         overwritesprite(206, y, kMenuCursorTile, 0, 10, kPalNormal);
 
         videoNextPage();
@@ -944,7 +956,8 @@ void menu_AdjustVolume()
             KB_KeyDown[sc_DownArrow] = 0;
         }
 
-        if ((int)totalclock <= var_8) {
+        if ((int)totalclock <= var_8)
+        {
             continue;
         }
 
@@ -956,27 +969,31 @@ void menu_AdjustVolume()
             {
                 case 0:
                 {
-                    if (gMusicVolume > 3) {
+                    if (gMusicVolume > 3)
+                    {
                         gMusicVolume -= 4;
                     }
 
-// TODO				SetMusicVolume();
-    				setCDaudiovolume(gMusicVolume);
+                    // TODO				SetMusicVolume();
+                    setCDaudiovolume(gMusicVolume);
                     continue;
                 }
 
                 case 1:
                 {
-                    if (gFXVolume > 3) {
+                    if (gFXVolume > 3)
+                    {
                         gFXVolume -= 4;
                     }
 
                     SetMasterFXVolume(gFXVolume);
 
-                    if (LocalSoundPlaying()) {
+                    if (LocalSoundPlaying())
+                    {
                         UpdateLocalSound();
                     }
-                    else {
+                    else
+                    {
                         PlayLocalSound(StaticSound[kSoundAmbientStone], 0);
                     }
                     continue;
@@ -990,27 +1007,31 @@ void menu_AdjustVolume()
             {
                 case 0:
                 {
-                    if (gMusicVolume < 252) {
+                    if (gMusicVolume < 252)
+                    {
                         gMusicVolume += 4;
                     }
 
-//  				SetMusicVolume();
-    				setCDaudiovolume(gMusicVolume);
+                    //  				SetMusicVolume();
+                    setCDaudiovolume(gMusicVolume);
                     continue;
                 }
 
                 case 1:
                 {
-                    if (gFXVolume < 252) {
+                    if (gFXVolume < 252)
+                    {
                         gFXVolume += 4;
                     }
 
                     SetMasterFXVolume(gFXVolume);
 
-                    if (LocalSoundPlaying()) {
+                    if (LocalSoundPlaying())
+                    {
                         UpdateLocalSound();
                     }
-                    else {
+                    else
+                    {
                         PlayLocalSound(StaticSound[kSoundAmbientStone], 0);
                     }
                     continue;
@@ -1018,10 +1039,12 @@ void menu_AdjustVolume()
             }
         }
 
-        if (GetLocalSound() != 23) {
+        if (GetLocalSound() != 23)
+        {
             continue;
         }
-        else {
+        else
+        {
             StopLocalSound();
         }
     }
@@ -1030,18 +1053,18 @@ void menu_AdjustVolume()
 int menu_NewGameMenu()
 {
     const char endMark = 0xF;
-    char nameList[kMaxSaveSlots][kMaxSaveSlotChars];
-    int nameListSize = sizeof(nameList);
+    char       nameList[kMaxSaveSlots][kMaxSaveSlotChars];
+    int        nameListSize = sizeof(nameList);
 
-    int nNameOffset = 0; // char index into slot name string
-    int nSlot = 0;
+    int nNameOffset = 0;  // char index into slot name string
+    int nSlot       = 0;
 
     int arg_3E = tilesiz[kMenuBlankTitleTile].x - 10;
 
     FILE *fp = fopen(kSaveFileName, "rb");
     if (fp == NULL)
     {
-        memset(nameList,   0, nameListSize);
+        memset(nameList, 0, nameListSize);
         memset(&GameStats, 0, sizeof(GameStat));
 
         fp = fopen(kSaveFileName, "wb+");
@@ -1049,7 +1072,8 @@ int menu_NewGameMenu()
         {
             // write new blank save file
             fwrite(nameList, nameListSize, 1, fp);
-            for (int i = 0; i < kMaxSaveSlots; i++) {
+            for (int i = 0; i < kMaxSaveSlots; i++)
+            {
                 fwrite(&GameStats, sizeof(GameStats), 1, fp);
             }
 
@@ -1121,10 +1145,12 @@ int menu_NewGameMenu()
             if (KB_KeyDown[sc_UpArrow])
             {
                 PlayLocalSound(StaticSound[kSoundSwitchWtr1], 0);
-                if (nSlot <= 0) {
+                if (nSlot <= 0)
+                {
                     nSlot = 4;
                 }
-                else {
+                else
+                {
                     nSlot--;
                 }
 
@@ -1136,10 +1162,12 @@ int menu_NewGameMenu()
             if (KB_KeyDown[sc_DownArrow])
             {
                 PlayLocalSound(StaticSound[kSoundSwitchWtr1], 0);
-                if (nSlot >= 4) {
+                if (nSlot >= 4)
+                {
                     nSlot = 0;
                 }
-                else {
+                else
+                {
                     nSlot++;
                 }
 
@@ -1156,12 +1184,13 @@ int menu_NewGameMenu()
     }
 
     PlayLocalSound(StaticSound[kSoundSwitchFoot], 0);
-    if (KB_KeyDown[sc_Return]) {
+    if (KB_KeyDown[sc_Return])
+    {
         ClearAllKeys();
     }
 
-    char *pName = nameList[nSlot];
-    int nNameLength = strlen(pName);
+    char *pName       = nameList[nSlot];
+    int   nNameLength = strlen(pName);
 
     memset(pName, 0, nNameLength);
 
@@ -1193,7 +1222,7 @@ int menu_NewGameMenu()
 
         char ch = 0;
 
-check_keys:
+    check_keys:
         if (KB_KeyWaiting())
         {
             HandleAsync();
@@ -1214,26 +1243,29 @@ check_keys:
                 PlayLocalSound(StaticSound[kSoundSwitchFoot], 0);
                 KB_KeyDown[sc_Return] = 0;
 
-                if (nameList[nSlot][0] == 0) {
+                if (nameList[nSlot][0] == 0)
+                {
                     return -1;
                 }
 
-                if (nNameLength) // does the save slot already exist?
+                if (nNameLength)  // does the save slot already exist?
                 {
                     menu_DoPlasma();
-                    if (Query(2, 4, "Overwrite existing game?", "Y/N", 'Y', 13, 'N', 27) >= 2) {
+                    if (Query(2, 4, "Overwrite existing game?", "Y/N", 'Y', 13, 'N', 27) >= 2)
+                    {
                         return -1;
                     }
                 }
 
                 FILE *fp = fopen(kSaveFileName, "rb+");
-                if (fp == NULL) {
+                if (fp == NULL)
+                {
                     return -1;
                 }
 
                 memset(&GameStats, 0, sizeof(GameStat));
                 GameStats.nWeapons = 1;
-                GameStats.nMap = 1;
+                GameStats.nMap     = 1;
 
                 fwrite(nameList, sizeof(nameList), 1, fp);
                 fseek(fp, sizeof(nameList), SEEK_SET);
@@ -1245,13 +1277,14 @@ check_keys:
             else
             {
                 // Enter wasn't pressed
-                PlayLocalSound(4, 0); // ??
+                PlayLocalSound(4, 0);  // ??
 
                 if (ch == asc_BackSpace)
                 {
                     nameList[nSlot][nNameOffset] = 0;
 
-                    if (nNameOffset > 0) {
+                    if (nNameOffset > 0)
+                    {
                         nNameOffset--;
                     }
 
@@ -1268,17 +1301,14 @@ check_keys:
                 else
                 {
                     // check if a slot name is being typed
-                    if ((ch >= '0' && ch <= '9')
-                    ||  (ch >= 'A' && ch <= 'Z')
-                    ||  (ch >= 'a' && ch <= 'z')
-                    ||  (ch == ' '))
+                    if ((ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch == ' '))
                     {
                         ch = toupper(ch);
-                        if (nNameOffset < 24) // n chars per slot name
+                        if (nNameOffset < 24)  // n chars per slot name
                         {
                             nameList[nSlot][nNameOffset] = ch;
                             nNameOffset++;
-                            nameList[nSlot][nNameOffset] = '\0'; // null terminate in the new offset
+                            nameList[nSlot][nNameOffset] = '\0';  // null terminate in the new offset
 
                             int nLen = MyGetStringWidth(nameList[nSlot]);
                             if (nLen > arg_3E)
@@ -1297,7 +1327,7 @@ check_keys:
 
         int arg_5E = ((int)totalclock / 30) & 1;
 
-        int y = 90;
+        int y      = 90;
         int arg_42 = 98;
 
         for (int i = 0; i < 5; i++)
@@ -1343,11 +1373,11 @@ int menu_LoadGameMenu()
         overwritesprite(80, 65, kMenuLoadGameTile, 0, 2, kPalNormal);
 
         int spriteY = 90;
-        int textY = 98;
+        int textY   = 98;
 
         for (int i = 0; i < kMaxSaveSlots; i++)
         {
-            int8_t shade = ((Sin((int)totalclock << 4) >> 9)* (i == nSlot)) + ((i != nSlot) * 31);
+            int8_t shade = ((Sin((int)totalclock << 4) >> 9) * (i == nSlot)) + ((i != nSlot) * 31);
             overwritesprite(55, spriteY, kMenuBlankTitleTile, shade, 2, kPalNormal);
 
             myprintext(63, textY, nameList[i], 0);
@@ -1357,7 +1387,7 @@ int menu_LoadGameMenu()
 
         int y = (nSlot * 22) + 78;
 
-        overwritesprite(35,  y, kMenuCursorTile, 0, 2, kPalNormal);
+        overwritesprite(35, y, kMenuCursorTile, 0, 2, kPalNormal);
         overwritesprite(233, y, kMenuCursorTile, 0, 10, kPalNormal);
         videoNextPage();
 
@@ -1371,30 +1401,35 @@ int menu_LoadGameMenu()
         if (KB_KeyDown[sc_UpArrow])
         {
             PlayLocalSound(StaticSound[kSoundSwitchWtr1], 0);
-            if (nSlot > 0) {
+            if (nSlot > 0)
+            {
                 nSlot--;
             }
-            else {
+            else
+            {
                 nSlot = kMaxSaveSlots - 1;
             }
 
             KB_KeyDown[sc_UpArrow] = 0;
         }
 
-        if (KB_KeyDown[sc_DownArrow]) // checkme - is 0x5b in disassembly
+        if (KB_KeyDown[sc_DownArrow])  // checkme - is 0x5b in disassembly
         {
             PlayLocalSound(StaticSound[kSoundSwitchWtr1], 0);
-            if (nSlot < kMaxSaveSlots - 1) {
+            if (nSlot < kMaxSaveSlots - 1)
+            {
                 nSlot++;
             }
-            else {
+            else
+            {
                 nSlot = 0;
             }
 
             KB_KeyDown[sc_DownArrow] = 0;
         }
 
-        if (!KB_KeyDown[sc_Return]) {
+        if (!KB_KeyDown[sc_Return])
+        {
             continue;
         }
 
@@ -1413,10 +1448,7 @@ int menu_LoadGameMenu()
     }
 }
 
-void menu_ResetKeyTimer()
-{
-    keytimer = (int)totalclock + 2400;
-}
+void menu_ResetKeyTimer() { keytimer = (int)totalclock + 2400; }
 
 void menu_GameLoad2(FILE *fp, bool bIsDemo)
 {
@@ -1425,34 +1457,34 @@ void menu_GameLoad2(FILE *fp, bool bIsDemo)
         demo_header header;
         fread(&header, 1, sizeof(demo_header), fp);
 
-        GameStats.nMap = header.nMap;
-        GameStats.nWeapons = header.nWeapons;
-        GameStats.nCurrentWeapon = header.nCurrentWeapon;
-        GameStats.clip = header.clip;
-        GameStats.items = header.items;
-        GameStats.player.nHealth = header.nHealth;
-        GameStats.player.field_2 = header.field_2;
-        GameStats.player.nAction = header.nAction;
-        GameStats.player.nSprite = header.nSprite;
-        GameStats.player.bIsMummified = header.bIsMummified;
-        GameStats.player.someNetVal = header.someNetVal;
+        GameStats.nMap                 = header.nMap;
+        GameStats.nWeapons             = header.nWeapons;
+        GameStats.nCurrentWeapon       = header.nCurrentWeapon;
+        GameStats.clip                 = header.clip;
+        GameStats.items                = header.items;
+        GameStats.player.nHealth       = header.nHealth;
+        GameStats.player.field_2       = header.field_2;
+        GameStats.player.nAction       = header.nAction;
+        GameStats.player.nSprite       = header.nSprite;
+        GameStats.player.bIsMummified  = header.bIsMummified;
+        GameStats.player.someNetVal    = header.someNetVal;
         GameStats.player.invincibility = header.invincibility;
-        GameStats.player.nAir = header.nAir;
-        GameStats.player.nSeq = header.nSeq;
-        GameStats.player.nMaskAmount = header.nMaskAmount;
-        GameStats.player.keys = header.keys;
-        GameStats.player.nMagic = header.nMagic;
+        GameStats.player.nAir          = header.nAir;
+        GameStats.player.nSeq          = header.nSeq;
+        GameStats.player.nMaskAmount   = header.nMaskAmount;
+        GameStats.player.keys          = header.keys;
+        GameStats.player.nMagic        = header.nMagic;
         Bmemcpy(GameStats.player.items, header.item, sizeof(header.item));
         Bmemcpy(GameStats.player.nAmmo, header.nAmmo, sizeof(header.nAmmo));
         Bmemcpy(GameStats.player.pad, header.pad, sizeof(header.pad));
         GameStats.player.nCurrentWeapon = header.nCurrentWeapon2;
-        GameStats.player.field_3FOUR = header.field_3FOUR;
-        GameStats.player.bIsFiring = header.bIsFiring;
-        GameStats.player.field_38 = header.field_38;
-        GameStats.player.field_3A = header.field_3A;
-        GameStats.player.field_3C = header.field_3C;
-        GameStats.player.nRun = header.nRun;
-        GameStats.nLives = header.nLives;
+        GameStats.player.field_3FOUR    = header.field_3FOUR;
+        GameStats.player.bIsFiring      = header.bIsFiring;
+        GameStats.player.field_38       = header.field_38;
+        GameStats.player.field_3A       = header.field_3A;
+        GameStats.player.field_3C       = header.field_3C;
+        GameStats.player.nRun           = header.nRun;
+        GameStats.nLives                = header.nLives;
     }
     else
         fread(&GameStats, sizeof(GameStats), 1, fp);
@@ -1460,10 +1492,11 @@ void menu_GameLoad2(FILE *fp, bool bIsDemo)
     nPlayerWeapons[nLocalPlayer] = GameStats.nWeapons;
 
     PlayerList[nLocalPlayer].nCurrentWeapon = GameStats.nCurrentWeapon;
-    nPlayerClip[nLocalPlayer] = GameStats.clip;
+    nPlayerClip[nLocalPlayer]               = GameStats.clip;
 
     int nPistolBullets = PlayerList[nLocalPlayer].nAmmo[kWeaponPistol];
-    if (nPistolBullets >= 6) {
+    if (nPistolBullets >= 6)
+    {
         nPistolBullets = 6;
     }
 
@@ -1483,7 +1516,8 @@ short menu_GameLoad(int nSlot)
     memset(&GameStats, 0, sizeof(GameStats));
 
     FILE *fp = fopen(kSaveFileName, "rb");
-    if (fp == NULL) {
+    if (fp == NULL)
+    {
         return 0;
     }
 
@@ -1500,12 +1534,12 @@ void menu_GameSave2(FILE *fp)
 {
     memset(&GameStats, 0, sizeof(GameStats));
 
-    GameStats.nMap = (uint8_t)levelnew;
-    GameStats.nWeapons = nPlayerWeapons[nLocalPlayer];
+    GameStats.nMap           = (uint8_t)levelnew;
+    GameStats.nWeapons       = nPlayerWeapons[nLocalPlayer];
     GameStats.nCurrentWeapon = PlayerList[nLocalPlayer].nCurrentWeapon;
-    GameStats.clip   = nPlayerClip[nLocalPlayer];
-    GameStats.items  = nPlayerItem[nLocalPlayer];
-    GameStats.nLives = nPlayerLives[nLocalPlayer];
+    GameStats.clip           = nPlayerClip[nLocalPlayer];
+    GameStats.items          = nPlayerItem[nLocalPlayer];
+    GameStats.nLives         = nPlayerLives[nLocalPlayer];
 
     memcpy(&GameStats.player, &PlayerList[nLocalPlayer], sizeof(GameStats.player));
 
@@ -1514,14 +1548,15 @@ void menu_GameSave2(FILE *fp)
 
 void menu_GameSave(int nSaveSlot)
 {
-    if (nSaveSlot < 0) {
+    if (nSaveSlot < 0)
+    {
         return;
     }
 
     FILE *fp = fopen(kSaveFileName, "rb+");
     if (fp != NULL)
     {
-        fseek(fp, 125, SEEK_SET); // skip save slot names
+        fseek(fp, 125, SEEK_SET);  // skip save slot names
         fseek(fp, sizeof(GameStat) * nSaveSlot, SEEK_CUR);
         menu_GameSave2(fp);
         fclose(fp);
@@ -1532,6 +1567,594 @@ void menu_ResetZoom()
 {
     zoomsize = 0;
     PlayLocalSound(StaticSound[kSoundItemUse], 0);
+}
+//mercury
+/*
+char *CONFIG_FunctionNumToName(int32_t func)
+{
+    if ((unsigned)func >= (unsigned)NUMGAMEFUNCTIONS)
+        return NULL;
+    return gamefunctions[func];
+}
+*/
+int SearchAlphabetTile(const char letter)
+{
+    
+    char letter_Upper = toupper(letter);
+    if (letter == toupper('_'))
+    {
+        letter_Upper = toupper('-');
+    }
+    char alphabet[]{ " ABCDEFGHIJKLMNOPQRSTUVWXYZ.!?,'\"-0123456789" };
+    int  tile[44] { 3521, 3522, 3523, 3524, 3525, 3526, 3527, 3528, 3529, 3530, 3531,
+                    3532, 3533, 3534, 3535, 3536, 3537, 3538, 3539, 3540, 3541,
+                    3542, 3543, 3544, 3545, 3546, 3547, 3548, 3549, 3550, 3551,
+                    3552, 3553, 3554, 3555, 3556, 3557, 3558, 3559, 3560, 3561,
+                    3562, 3563, 3564 };
+
+    
+        for (int i=0; i < 44; i++)
+        {
+            
+            if (letter_Upper == alphabet[i])
+            {
+                return tile[i];
+            }
+        }
+        
+    return -1;
+}
+void menu_PlayerOptions()
+{
+    GrabPalette();
+
+    int var_1C = 0;
+
+    videoSetViewableArea(0, 0, xdim - 1, ydim - 1);
+
+    KB_KeyDown[sc_Escape] = 0;
+
+    StopAllSounds();
+    StopLocalSound();
+
+    menu_ResetKeyTimer();
+
+    KB_FlushKeyboardQueue();
+    KB_ClearKeysDown();
+
+    menu_ResetZoom();
+    char gamefunctions[][32] = { "Move_Forward",
+                                 "Move_Backward",
+                                 "Turn_Left",
+                                 "Turn_Right",
+                                 "Strafe",
+                                 "Strafe_Left",
+                                 "Strafe_Right",
+                                 "Run",
+                                 "Jump",
+                                 "Crouch",
+                                 "Fire",
+                                 "Open",
+                                 "Look_Up",
+                                 "Look_Down",
+                                 "Look_Straight",
+                                 "Aim_Up",
+                                 "Aim_Down",
+                                 "SendMessage",
+                                 "Weapon_1",
+                                 "Weapon_2",
+                                 "Weapon_3",
+                                 "Weapon_4",
+                                 "Weapon_5",
+                                 "Weapon_6",
+                                 "Weapon_7",
+                                 "Pause",
+                                 "Map",
+                                 "Zoom_In",
+                                 "Zoom_Out",
+                                 "Gamma_Correction",
+                                 "Escape",
+                                 "Shrink_Screen",
+                                 "Enlarge_Screen",
+                                 "Inventory",
+                                 "Inventory_Left",
+                                 "Inventory_Right",
+                                 "Mouse_Sensitivity_Up",
+                                 "Mouse_Sensitivity_Down",
+                                 "Show_Console ",
+                                 "Mouse_Aiming",
+                                 "Toggle_Crosshair" };
+
+    int  gamefunctionsCount  = sizeof(gamefunctions[0]) / sizeof(gamefunctions[0][32]);
+
+    short ptr[42];
+    memset(ptr, 1, sizeof(ptr));
+
+    // disable new game and load game if in multiplayer?
+    if (nNetPlayerCount)
+    {
+        ptr[1] = 0;
+        ptr[0] = 0;
+    }
+
+    // denote which menu item we've currently got selected
+    int nMenu = 0;
+
+    while (1)
+    {
+        HandleAsync();
+        OSD_DispatchQueued();
+
+        // skip any disabled menu items so we're selecting the first active one
+        while (!ptr[gamefunctionsCount])
+        {
+            nMenu++;
+            if (gamefunctionsCount == 5)
+            {
+                nMenu = 0;
+            }
+        }
+
+        // handle the menu zoom-in
+        if (zoomsize < 0x10000)
+        {
+            zoomsize += 4096;
+            if (zoomsize >= 0x10000)
+            {
+                zoomsize = 0x10000;
+            }
+        }
+        int bInLevelMenus = 0;
+        // menu idle timer - will play the demo file if no keys pressed after timer runs out
+        if (!bInLevelMenus && (int)totalclock > keytimer)
+        {
+            return;
+        }
+
+        // loc_39F54:
+        //menu_DoPlasma();
+        videoClearScreen(overscanindex);
+        
+        INT x = 1;  //
+        int maxX  = 0;
+        int y = 0;  // 65 - tilesiz[kMenuNewGameTile].y / 2;
+        //mercury
+        int8_t shade;
+
+        // YELLOW loop - Draw the menu options (NEW GAME, TRAINING etc)
+        for (int j = 0; j < gamefunctionsCount; j++)
+        {
+            // mercury DrawMenu
+
+
+            char *ptr   = gamefunctions[j];
+            int   nTile = -1;
+            int   nMaxX = 0;
+            x           = maxX ;
+            for (char c = *ptr; c; c = *++ptr)
+            {
+                nTile = SearchAlphabetTile(c);
+                
+                if (nMenu == j)
+                {  // currently selected menu item
+                    shade = Sin((int)totalclock << 4) >> 9;
+                }
+                else
+                //else if (ptr[j])
+                //{
+                    shade = 0;
+                //}
+                //else
+                //{
+                //    shade = 25;
+                //}
+                
+                
+                picanm[nTile].xofs = 0;
+                picanm[nTile].yofs = 0;
+                if (nTile == 3530 || nTile == 3554)
+                {
+                    picanm[nTile].xofs += 10;
+                }
+                
+                
+                rotatesprite(x << 16 , (y + tilesiz[nTile].y) << 16, 21096, 0, nTile, shade, 0, 2, 0, 0, xdim, ydim);
+                x += tilesiz[nTile].x - 1;
+                if (x > nMaxX)
+                {
+                    nMaxX = x;
+                }
+            }
+            /*
+            char nPalette = 0;
+            char alpha    = 0;
+            char x        = 100;
+            
+            if (tilesiz[nTile].x && tilesiz[nTile].y)
+            {
+                if (shade)
+                {
+                    rotatesprite_fs_alpha((x + 1) << 16, (y + 1) << 16, nTile, 0, nTile, 127, nPalette, 26, alpha);
+                }
+                rotatesprite_fs_alpha(x << 16, y << 16, nTile, 0, nTile, shade, palette[5], 26, alpha);
+                //x += tilesiz[nTile].x + pFont->space;
+            }
+            */
+            y += 10;
+
+            if (y > 180)
+            {
+                maxX += nMaxX + 100;
+                x = 0;
+                y = 0;
+            }
+        }
+
+        // tilesizx is 51
+        // tilesizy is 33
+        //egipt cursor sprite
+        //int markerY = (22 * nMenu) + 53;
+        //overwritesprite(62, markerY, kMenuCursorTile, 0, 2, kPalNormal);
+        //overwritesprite(62 + 146, markerY, kMenuCursorTile, 0, 10, kPalNormal);
+
+        videoNextPage();
+
+        int l = 0;  // edi
+
+        // ORANGE loop
+        for (l = 0;; l++)
+        {
+            int nKey = nMenuKeys[l];
+            if (!nKey)
+            {
+                break;
+            }
+
+            if (KB_KeyDown[nKey])
+            {
+                goto LABEL_21;  // TEMP
+            }
+        }
+
+        // loc_3A0A7
+        while (KB_KeyDown[sc_Escape])
+        {
+            HandleAsync();
+
+            PlayLocalSound(StaticSound[kSoundSwitchFoot], 0);
+            KB_KeyDown[sc_Escape] = 0;
+
+            if (bInLevelMenus)
+            {
+                StopAllSounds();
+                PlayLocalSound(StaticSound[kSoundSwitchFoot], 0);
+                MySetView(nViewLeft, nViewTop, nViewRight, nViewBottom);
+                return;
+            }
+
+            l = gamefunctionsCount - 1;
+        LABEL_21:
+
+            menu_ResetKeyTimer();
+
+            if (l != nMenu)
+            {
+                PlayLocalSound(StaticSound[kSoundSwitchWtr1], 0);
+                KB_KeyDown[nMenuKeys[l]] = 0;
+                nMenu                    = l;
+            }
+            return;  //to uppermenuy
+        }
+
+        if (KB_KeyDown[sc_Space] || KB_KeyDown[sc_Return])
+        {
+            var_1C = 1;
+        }
+        else if (var_1C)
+        {
+            var_1C = 0;
+
+            PlayLocalSound(StaticSound[kSoundSwitchFoot], 0);
+            /*
+            switch (nMenu)  // TODO - change var name?
+            {
+                case kMenuNewGame:
+                {
+                    if (nTotalPlayers > 1)
+                    {
+                        menu_ResetZoom();
+                        menu_ResetKeyTimer();
+                        break;
+                    }
+
+                    SavePosition = menu_NewGameMenu();
+                    if (SavePosition == -1)
+                    {
+                        menu_ResetZoom();
+                        menu_ResetKeyTimer();
+                        break;
+                    }
+
+                    FadeOut(1);
+                    StopAllSounds();
+
+                    StopAllSounds();
+                    PlayLocalSound(StaticSound[kSoundSwitchFoot], 0);
+                    MySetView(nViewLeft, nViewTop, nViewRight, nViewBottom);
+                    return;
+                }
+
+                case kMenuLoadGame:
+                {
+                    if (nTotalPlayers > 1)
+                    {
+                        menu_ResetZoom();
+                        menu_ResetKeyTimer();
+                        break;
+                    }
+
+                    SavePosition = menu_LoadGameMenu();
+
+                    if (SavePosition == -1)
+                    {
+                        menu_ResetZoom();
+                        menu_ResetKeyTimer();
+                        break;
+                    }
+
+                    StopAllSounds();
+
+                    StopAllSounds();
+                    PlayLocalSound(StaticSound[kSoundSwitchFoot], 0);
+                    MySetView(nViewLeft, nViewTop, nViewRight, nViewBottom);
+                    return;
+                }
+
+                case kMenuTraining:
+                {
+                    if (nTotalPlayers > 1)
+                    {
+                        menu_ResetZoom();
+                        menu_ResetKeyTimer();
+                        break;
+                    }
+
+                    StopAllSounds();
+                    PlayLocalSound(StaticSound[kSoundSwitchFoot], 0);
+                    MySetView(nViewLeft, nViewTop, nViewRight, nViewBottom);
+                    return;
+                }
+
+                case kMenuVolume:
+                {
+                    menu_AdjustVolume();
+                    menu_ResetZoom();
+                    menu_ResetKeyTimer();
+                    break;
+                }
+
+                case kMenuQuitGame:
+                {
+                    StopAllSounds();
+                    StopAllSounds();
+                    PlayLocalSound(StaticSound[kSoundSwitchFoot], 0);
+                    MySetView(nViewLeft, nViewTop, nViewRight, nViewBottom);
+                    return;
+                }
+
+                case kMenuOptions:
+                {
+                    MySetView(nViewLeft, nViewTop, nViewRight, nViewBottom);
+                    menu_PlayerOptions();
+                }
+                default:
+                    menu_ResetZoom();
+                    menu_ResetKeyTimer();
+                    break;
+            }
+            */
+        }
+
+        if (KB_KeyDown[sc_UpArrow])
+        {
+            PlayLocalSound(StaticSound[kSoundSwitchWtr1], 0);
+            if (nMenu <= 0)
+            {
+                nMenu = gamefunctionsCount - 1;
+            }
+            else
+            {
+                nMenu--;
+            }
+
+            KB_KeyDown[sc_UpArrow] = 0;
+            menu_ResetKeyTimer();
+        }
+
+        if (KB_KeyDown[sc_DownArrow])  // FIXME - is this down arrow? value is '5B' in disassembly
+        {
+            PlayLocalSound(StaticSound[kSoundSwitchWtr1], 0);
+            if (nMenu >= gamefunctionsCount - 1)
+            {
+                nMenu = 0;
+            }
+            else
+            {
+                nMenu++;
+            }
+
+            KB_KeyDown[sc_DownArrow] = 0;
+            menu_ResetKeyTimer();
+        }
+
+        // TODO - change to #defines
+        if (KB_KeyDown[0x5c])
+        {
+            KB_KeyDown[0x5c] = 0;
+        }
+
+        if (KB_KeyDown[0x5d])
+        {
+            KB_KeyDown[0x5d] = 0;
+        }
+    }
+}
+//mercury
+char kFontNum = 5;
+struct FONT
+{
+    int tile, xSize, ySize, space, yoff;
+};
+FONT gFont[5];
+struct CACHENODE
+{
+    void *     ptr;
+    CACHENODE *prev;
+    CACHENODE *next;
+    int        lockCount;
+};
+struct DICTNODE : CACHENODE
+{
+    unsigned int offset;
+    unsigned int size;
+    char         flags;
+    //char type[3];
+    //char name[8];
+    char *       type;
+    char *       name;
+    char *       path;
+    char *       buffer;
+    unsigned int id;
+};
+typedef struct
+{
+    int           offset;
+    unsigned char w;
+    unsigned char h;
+    unsigned char ox;
+    signed char   oy;
+} QFONTCHAR;
+
+struct QFONT
+{
+    unsigned char  at0[4];  // signature
+    unsigned char  pad0[2];
+    unsigned short at6;
+    unsigned char  pad1[0x7];
+    unsigned char  atf;
+    unsigned char  at10;
+    signed char    at11;
+    unsigned char  at12;
+    unsigned char  at13;
+    unsigned char  pad2[0xc];
+    QFONTCHAR      at20[256];
+    char           at820[1];
+};
+
+void FontSet(int id, int tile, int space)
+{
+    if (id < 0 || id >= kFontNum || tile < 0 || tile >= kMaxTiles)
+        return;
+
+    FONT *pFont = &gFont[id];
+    int   yoff  = 0;
+
+    DICTNODE *hQFont;  //mercury = gSysRes.Lookup(id, "QFN");
+    if (hQFont)
+    {
+        QFONT *pQFont;  // mercury = (QFONT *)gSysRes.Load(hQFont);
+        for (int i = 32; i < 128; i++)
+        {
+            int const  nTile = tile + i - 32;
+            QFONTCHAR *pChar = &pQFont->at20[i];
+            yoff             = min(yoff, pQFont->atf + pChar->oy);
+        }
+        for (int i = 32; i < 128; i++)
+        {
+            int const nTile = tile + i - 32;
+            if (waloff[nTile])
+                continue;
+            QFONTCHAR *pChar   = &pQFont->at20[i];
+            int const  width   = max(pChar->w, pChar->ox);
+            int const  height  = max(pQFont->atf + pChar->oy + pChar->h - yoff, 1);
+            char *     tilePtr = (char *)tileCreate(nTile, width, height);
+            if (!tilePtr)
+                continue;
+            Bmemset(tilePtr, 255, width * height);
+            for (int x = 0; x < pChar->w; x++)
+            {
+                for (int y = 0; y < pChar->h; y++)
+                {
+                    int const dx = x;
+                    int const dy = y + pQFont->atf + pChar->oy - yoff;
+                    if (dx >= 0 && dx < width && dy >= 0 && dy < height)
+                        tilePtr[dx * height + dy] = pQFont->at820[pChar->offset + x * pChar->h + y];
+                }
+            }
+        }
+
+        pFont->tile  = tile;
+        pFont->xSize = pQFont->at12;
+        pFont->ySize = pQFont->at13;
+        pFont->space = pQFont->at11;
+        pFont->yoff  = yoff;
+
+        return;
+    }
+    int xSize   = 0;
+    int ySize   = 0;
+    pFont->tile = tile;
+    for (int i = 0; i < 96; i++)
+    {
+        if (tilesiz[tile + i].x > xSize)
+            xSize = tilesiz[tile + i].x;
+        if (tilesiz[tile + i].y > ySize)
+            ySize = tilesiz[tile + i].y;
+    }
+    pFont->xSize = xSize;
+    pFont->ySize = ySize;
+    pFont->space = space;
+    pFont->yoff  = yoff;
+}
+
+void viewDrawText(int nFont, const char *pString, int x, int y, int nShade, int nPalette, int position, char shadow, unsigned int nStat, uint8_t alpha)
+{
+    if (nFont < 0 || nFont >= kFontNum || !pString)
+        return;
+    FONT *pFont = &gFont[nFont];
+
+    y += pFont->yoff;
+
+    if (position)
+    {
+        const char *s     = pString;
+        int         width = -pFont->space;
+        while (*s)
+        {
+            int nTile = ((*s - ' ') & 127) + pFont->tile;
+            if (tilesiz[nTile].x && tilesiz[nTile].y)
+                width += tilesiz[nTile].x + pFont->space;
+            s++;
+        }
+        if (position == 1)
+            width >>= 1;
+        x -= width;
+    }
+    const char *s = pString;
+    while (*s)
+    {
+        int nTile = ((*s - ' ') & 127) + pFont->tile;
+        if (tilesiz[nTile].x && tilesiz[nTile].y)
+        {
+            if (shadow)
+            {
+                rotatesprite_fs_alpha((x + 1) << 16, (y + 1) << 16, 65536, 0, nTile, 127, nPalette, 26 | nStat, alpha);
+            }
+            rotatesprite_fs_alpha(x << 16, y << 16, 65536, 0, nTile, nShade, nPalette, 26 | nStat, alpha);
+            x += tilesiz[nTile].x + pFont->space;
+        }
+        s++;
+    }
 }
 
 int menu_Menu(int bInLevelMenus)
@@ -1576,7 +2199,8 @@ int menu_Menu(int bInLevelMenus)
         while (!ptr[nMenu])
         {
             nMenu++;
-            if (nMenu == 5) {
+            if (nMenu == 5)
+            {
                 nMenu = 0;
             }
         }
@@ -1585,13 +2209,15 @@ int menu_Menu(int bInLevelMenus)
         if (zoomsize < 0x10000)
         {
             zoomsize += 4096;
-            if (zoomsize >= 0x10000) {
+            if (zoomsize >= 0x10000)
+            {
                 zoomsize = 0x10000;
             }
         }
 
         // menu idle timer - will play the demo file if no keys pressed after timer runs out
-        if (!bInLevelMenus && (int)totalclock > keytimer) {
+        if (!bInLevelMenus && (int)totalclock > keytimer)
+        {
             return 9;
         }
 
@@ -1599,25 +2225,39 @@ int menu_Menu(int bInLevelMenus)
         menu_DoPlasma();
 
         int y = 65 - tilesiz[kMenuNewGameTile].y / 2;
-
+        //mercury
         // YELLOW loop - Draw the 5 menu options (NEW GAME, TRAINING etc)
-        for (int j = 0; j < 5; j++)
+        for (int j = 0; j < kMenuMaxItems; j++)
         {
             int8_t shade;
 
-            if (nMenu == j) { // currently selected menu item
+            if (nMenu == j)
+            {  // currently selected menu item
                 shade = Sin((int)totalclock << 4) >> 9;
             }
-            else if (ptr[j]) {
+            else if (ptr[j])
+            {
                 shade = 0;
             }
-            else {
+            else
+            {
                 shade = 25;
             }
 
             picanm[j + kMenuNewGameTile].xofs = 0;
             picanm[j + kMenuNewGameTile].yofs = 0;
-            rotatesprite(160 << 16, (y + tilesiz[j + kMenuNewGameTile].y) << 16, zoomsize, 0, kMenuNewGameTile + j, shade, 0, 2, 0, 0, xdim, ydim);
+
+            if (kMenuNewGameTile + j != kMenuMusicTile)
+            {
+                rotatesprite(160 << 16, (y + tilesiz[j + kMenuNewGameTile].y) << 16, zoomsize, 0, kMenuNewGameTile + j, shade, 0, 2, 0, 0, xdim, ydim);
+            }
+            else
+            {
+                //Draw Player (options menu)
+                picanm[j + 2 + kMenuNewGameTile].xofs = 0;
+                picanm[j + 2 + kMenuNewGameTile].yofs = 0;
+                rotatesprite(160 << 16, (y + tilesiz[j + kMenuNewGameTile].y) << 16, zoomsize, 0, kMenuNewGameTile + j + 2, shade, 0, 2, 0, 0, xdim, ydim);
+            }
 
             y += 22;
         }
@@ -1626,24 +2266,25 @@ int menu_Menu(int bInLevelMenus)
         // tilesizy is 33
 
         int markerY = (22 * nMenu) + 53;
-        overwritesprite(62,       markerY, kMenuCursorTile, 0, 2, kPalNormal);
+        overwritesprite(62, markerY, kMenuCursorTile, 0, 2, kPalNormal);
         overwritesprite(62 + 146, markerY, kMenuCursorTile, 0, 10, kPalNormal);
 
         videoNextPage();
 
-        int l = 0; // edi
+        int l = 0;  // edi
 
         // ORANGE loop
-        for (l = 0; ; l++)
+        for (l = 0;; l++)
         {
             int nKey = nMenuKeys[l];
-            if (!nKey) {
+            if (!nKey)
+            {
                 break;
             }
 
             if (KB_KeyDown[nKey])
             {
-                goto LABEL_21; // TEMP
+                goto LABEL_21;  // TEMP
             }
         }
 
@@ -1663,8 +2304,8 @@ int menu_Menu(int bInLevelMenus)
                 return -1;
             }
 
-            l = 4;
-LABEL_21:
+            l = kMenuMaxItems - 1;
+        LABEL_21:
 
             menu_ResetKeyTimer();
 
@@ -1672,7 +2313,7 @@ LABEL_21:
             {
                 PlayLocalSound(StaticSound[kSoundSwitchWtr1], 0);
                 KB_KeyDown[nMenuKeys[l]] = 0;
-                nMenu = l;
+                nMenu                    = l;
             }
         }
 
@@ -1686,18 +2327,20 @@ LABEL_21:
 
             PlayLocalSound(StaticSound[kSoundSwitchFoot], 0);
 
-            switch (nMenu) // TODO - change var name?
+            switch (nMenu)  // TODO - change var name?
             {
                 case kMenuNewGame:
                 {
-                    if (nTotalPlayers > 1) {
+                    if (nTotalPlayers > 1)
+                    {
                         menu_ResetZoom();
                         menu_ResetKeyTimer();
                         break;
                     }
 
                     SavePosition = menu_NewGameMenu();
-                    if (SavePosition == -1) {
+                    if (SavePosition == -1)
+                    {
                         menu_ResetZoom();
                         menu_ResetKeyTimer();
                         break;
@@ -1714,7 +2357,8 @@ LABEL_21:
 
                 case kMenuLoadGame:
                 {
-                    if (nTotalPlayers > 1) {
+                    if (nTotalPlayers > 1)
+                    {
                         menu_ResetZoom();
                         menu_ResetKeyTimer();
                         break;
@@ -1722,7 +2366,8 @@ LABEL_21:
 
                     SavePosition = menu_LoadGameMenu();
 
-                    if (SavePosition == -1) {
+                    if (SavePosition == -1)
+                    {
                         menu_ResetZoom();
                         menu_ResetKeyTimer();
                         break;
@@ -1738,7 +2383,8 @@ LABEL_21:
 
                 case kMenuTraining:
                 {
-                    if (nTotalPlayers > 1) {
+                    if (nTotalPlayers > 1)
+                    {
                         menu_ResetZoom();
                         menu_ResetKeyTimer();
                         break;
@@ -1767,6 +2413,11 @@ LABEL_21:
                     return 0;
                 }
 
+                case kMenuOptions:
+                {
+                    MySetView(nViewLeft, nViewTop, nViewRight, nViewBottom);
+                    menu_PlayerOptions();
+                }
                 default:
                     menu_ResetZoom();
                     menu_ResetKeyTimer();
@@ -1777,10 +2428,12 @@ LABEL_21:
         if (KB_KeyDown[sc_UpArrow])
         {
             PlayLocalSound(StaticSound[kSoundSwitchWtr1], 0);
-            if (nMenu <= 0) {
-                nMenu = 4;
+            if (nMenu <= 0)
+            {
+                nMenu = kMenuMaxItems - 1;
             }
-            else {
+            else
+            {
                 nMenu--;
             }
 
@@ -1788,13 +2441,15 @@ LABEL_21:
             menu_ResetKeyTimer();
         }
 
-        if (KB_KeyDown[sc_DownArrow]) // FIXME - is this down arrow? value is '5B' in disassembly
+        if (KB_KeyDown[sc_DownArrow])  // FIXME - is this down arrow? value is '5B' in disassembly
         {
             PlayLocalSound(StaticSound[kSoundSwitchWtr1], 0);
-            if (nMenu >= 4) {
+            if (nMenu >= kMenuMaxItems - 1)
+            {
                 nMenu = 0;
             }
-            else {
+            else
+            {
                 nMenu++;
             }
 
@@ -1803,40 +2458,28 @@ LABEL_21:
         }
 
         // TODO - change to #defines
-        if (KB_KeyDown[0x5c]) {
+        if (KB_KeyDown[0x5c])
+        {
             KB_KeyDown[0x5c] = 0;
         }
 
-        if (KB_KeyDown[0x5d]) {
+        if (KB_KeyDown[0x5d])
+        {
             KB_KeyDown[0x5d] = 0;
         }
     }
 
-    return 0;// todo
+    return 0;  // todo
 }
 
-#define kMaxCinemaPals	16
-const char *cinpalfname[kMaxCinemaPals] = {
-    "3454.pal",
-    "3452.pal",
-    "3449.pal",
-    "3445.pal",
-    "set.pal",
-    "3448.pal",
-    "3446.pal",
-    "hsc1.pal",
-    "2972.pal",
-    "2973.pal",
-    "2974.pal",
-    "2975.pal",
-    "2976.pal",
-    "heli.pal",
-    "2978.pal",
-    "terror.pal"
-};
 
-int linecount;
-int nextclock;
+
+#define kMaxCinemaPals 16
+const char *cinpalfname[kMaxCinemaPals] = { "3454.pal", "3452.pal", "3449.pal", "3445.pal", "set.pal",  "3448.pal", "3446.pal", "hsc1.pal",
+                                            "2972.pal", "2973.pal", "2974.pal", "2975.pal", "2976.pal", "heli.pal", "2978.pal", "terror.pal" };
+
+int   linecount;
+int   nextclock;
 short nHeight;
 short nCrawlY;
 short cinematile;
@@ -1847,14 +2490,16 @@ int LoadCinemaPalette(int nPal)
 {
     nPal--;
 
-    if (nPal < 0 || nPal >= kMaxCinemaPals) {
+    if (nPal < 0 || nPal >= kMaxCinemaPals)
+    {
         return -2;
     }
 
     // original code strcpy'd into a buffer first...
 
     int hFile = kopen4loadfrommod(cinpalfname[nPal], 0);
-    if (hFile < 0) {
+    if (hFile < 0)
+    {
         return -2;
     }
 
@@ -1905,7 +2550,7 @@ void CinemaFadeIn()
     BlackOut();
 
     paletteSetColorTable(ANIMPAL, cinemapal);
-    videoSetPalette(0, ANIMPAL, 2+8);
+    videoSetPalette(0, ANIMPAL, 2 + 8);
 
 #ifdef USE_OPENGL
     if (videoGetRenderMode() >= REND_POLYMOST)
@@ -1934,11 +2579,12 @@ void ComputeCinemaText(int nLine)
 
     while (1)
     {
-        if (!strcmp(gString[linecount + nLine], "END")) {
+        if (!strcmp(gString[linecount + nLine], "END"))
+        {
             break;
         }
 
-        int nWidth = MyGetStringWidth(gString[linecount + nLine]);
+        int nWidth       = MyGetStringWidth(gString[linecount + nLine]);
         nLeft[linecount] = 160 - nWidth / 2;
 
         linecount++;
@@ -1953,13 +2599,15 @@ void ComputeCinemaText(int nLine)
 void ReadyCinemaText(uint16_t nVal)
 {
     line = FindGString("CINEMAS");
-    if (line < 0) {
+    if (line < 0)
+    {
         return;
     }
 
     while (nVal)
     {
-        while (strcmp(gString[line], "END")) {
+        while (strcmp(gString[line], "END"))
+        {
             line++;
         }
 
@@ -1976,16 +2624,17 @@ bool AdvanceCinemaText()
 
     if (bDoText || CDplaying())
     {
-        nextclock = (int)totalclock + 15; // NOTE: Value was 14 in original code but seems a touch too fast now
+        nextclock = (int)totalclock + 15;  // NOTE: Value was 14 in original code but seems a touch too fast now
 
         if (bDoText)
         {
             short y = nCrawlY;
-            int i = 0;
+            int   i = 0;
 
             while (i < linecount && y <= 199)
             {
-                if (y >= -10) {
+                if (y >= -10)
+                {
                     myprintext(nLeft[i], y, gString[line + i], 0);
                 }
 
@@ -2000,11 +2649,13 @@ bool AdvanceCinemaText()
         {
             HandleAsync();
 
-            if (KB_KeyDown[sc_Escape] || KB_KeyDown[sc_Return] || KB_KeyDown[sc_Space]) {
+            if (KB_KeyDown[sc_Escape] || KB_KeyDown[sc_Return] || KB_KeyDown[sc_Space])
+            {
                 break;
             }
 
-            if (nextclock <= (int)totalclock) {
+            if (nextclock <= (int)totalclock)
+            {
                 return true;
             }
         }
@@ -2089,8 +2740,10 @@ void GoToTheCinema(int nVal)
         }
     }
 
-    if (ISDEMOVER) {
-        if (!waloff[cinematile]) {
+    if (ISDEMOVER)
+    {
+        if (!waloff[cinematile])
+        {
             tileCreate(cinematile, 320, 200);
         }
     }
@@ -2102,7 +2755,7 @@ void GoToTheCinema(int nVal)
     overwritesprite(0, 0, kMovieTile, 100, 2, kPalNormal);
     videoNextPage();
 
-//	int386(16, (const union REGS *)&val, (union REGS *)&val)
+    //	int386(16, (const union REGS *)&val, (union REGS *)&val)
 
     overwritesprite(0, 0, cinematile, 0, 2, kPalNormal);
     videoNextPage();
@@ -2157,7 +2810,8 @@ void GoToTheCinema(int nVal)
     {
         if (edx != -1)
         {
-            if (CDplaying()) {
+            if (CDplaying())
+            {
                 fadecdaudio();
             }
 
@@ -2176,7 +2830,8 @@ void GoToTheCinema(int nVal)
     Clip();
 
     // quit the game if we've finished level 4 and displayed the advert text
-    if (ISDEMOVER && nVal == 3) {
+    if (ISDEMOVER && nVal == 3)
+    {
         ExitGame();
     }
 }
@@ -2212,12 +2867,14 @@ int showmap(short nLevel, short nLevelNew, short nLevelBest)
     GrabPalette();
     BlackOut();
 
-    if (nLevelNew != 11) {
+    if (nLevelNew != 11)
+    {
         CheckBeforeScene(nLevelNew);
     }
 
     int selectedLevel = menu_DrawTheMap(nLevel, nLevelNew, nLevelBest);
-    if (selectedLevel == 11) {
+    if (selectedLevel == 11)
+    {
         CheckBeforeScene(selectedLevel);
     }
 
@@ -2228,7 +2885,8 @@ void DoAfterCinemaScene(int nLevel)
 {
     short nAfterScene[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 7, 0, 0, 0, 0, 6 };
 
-    if (nAfterScene[nLevel]) {
+    if (nAfterScene[nLevel])
+    {
         GoToTheCinema(nAfterScene[nLevel]);
     }
 }
@@ -2237,7 +2895,8 @@ void DoFailedFinalScene()
 {
     videoSetViewableArea(0, 0, xdim - 1, ydim - 1);
 
-    if (CDplaying()) {
+    if (CDplaying())
+    {
         fadecdaudio();
     }
 
@@ -2267,7 +2926,8 @@ int FindGString(const char *str)
 
 uint8_t CheckForEscape()
 {
-    if (!KB_KeyWaiting() || (KB_GetCh() != 27)) {
+    if (!KB_KeyWaiting() || (KB_GetCh() != 27))
+    {
         return kFalse;
     }
 
@@ -2276,17 +2936,17 @@ uint8_t CheckForEscape()
 
 void DoStatic(int a, int b)
 {
-    RandomLong(); // nothing done with the result of this?
+    RandomLong();  // nothing done with the result of this?
 
     tileLoad(kTileLoboLaptop);
 
     int v2 = 160 - a / 2;
-    int v4 = 81  - b / 2;
+    int v4 = 81 - b / 2;
 
     int var_18 = v2 + a;
-    int v5 = v4 + b;
+    int v5     = v4 + b;
 
-    uint8_t *pTile = (uint8_t*)(waloff[kTileLoboLaptop] + (200 * v2)) + v4;
+    uint8_t *pTile = (uint8_t *)(waloff[kTileLoboLaptop] + (200 * v2)) + v4;
 
     tileInvalidate(kTileLoboLaptop, -1, -1);
 
@@ -2332,7 +2992,8 @@ void DoLastLevelCinema()
 
     int nEndTime = (int)totalclock + 240;
 
-    while (KB_KeyWaiting()) {
+    while (KB_KeyWaiting())
+    {
         KB_GetCh();
     }
 
@@ -2354,19 +3015,20 @@ void DoLastLevelCinema()
 
         // WaitVBL();
         int time = (int)totalclock + 4;
-        while ((int)totalclock < time) {
+        while ((int)totalclock < time)
+        {
             HandleAsync();
         }
     }
 
-//	loadtilelockmode = 1;
+    //	loadtilelockmode = 1;
     tileLoad(kTileLoboLaptop);
-//	loadtilelockmode = 0;
+    //	loadtilelockmode = 0;
 
     // loc_3AD75
 
     do
-    {  
+    {
     LABEL_11:
 
         HandleAsync();
@@ -2407,7 +3069,8 @@ void DoLastLevelCinema()
             {
                 HandleAsync();
 
-                if (*nChar != ' ') {
+                if (*nChar != ' ')
+                {
                     PlayLocalSound(StaticSound[kSoundPotPc1], 0);
                 }
 
@@ -2419,7 +3082,8 @@ void DoLastLevelCinema()
 
                 // WaitVBL();
                 int time = (int)totalclock + 4;
-                while ((int)totalclock < time) {
+                while ((int)totalclock < time)
+                {
                     HandleAsync();
                 }
 
@@ -2444,8 +3108,7 @@ void DoLastLevelCinema()
             if (v11 <= (int)totalclock)
                 goto LABEL_11;
         } while (!KB_KeyWaiting());
-    }
-    while (KB_GetCh() != 27);
+    } while (KB_GetCh() != 27);
 
 LABEL_28:
     PlayLocalSound(StaticSound[kSoundScorpionZap], 0);
@@ -2460,16 +3123,19 @@ LABEL_28:
 
         // WaitVBL();
         int time = (int)totalclock + 4;
-        while ((int)totalclock < time) {
+        while ((int)totalclock < time)
+        {
             HandleAsync();
         }
 
-        if (var_28 > 20) {
+        if (var_28 > 20)
+        {
             var_28 -= 20;
             continue;
         }
 
-        if (var_24 > 20) {
+        if (var_24 > 20)
+        {
             var_24 -= 20;
             continue;
         }
@@ -2479,7 +3145,7 @@ LABEL_28:
 
     EraseScreen(-1);
     tileLoad(kTileLoboLaptop);
-// FIXME - Revert this when fixing fades    FadeOut(0);
+    // FIXME - Revert this when fixing fades    FadeOut(0);
     MySetView(nViewLeft, nViewTop, nViewRight, nViewBottom);
     MaskStatus();
 }
