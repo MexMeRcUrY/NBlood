@@ -17,10 +17,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 //-------------------------------------------------------------------------
 
 #include "menu.h"
-
+#include "_control.h"
+#include "control.h"
 #include "build.h"
 #include "cd.h"
 #include "compat.h"
+#include "config.h"
 #include "engine.h"
 #include "exhumed.h"
 #include "gun.h"
@@ -37,8 +39,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #include "status.h"
 #include "typedefs.h"
 #include "view.h"
-
 #include <assert.h>
+
+#include "config.h"
 #include <string>
 
 #ifdef __WATCOMC__
@@ -1623,48 +1626,9 @@ void menu_PlayerOptions()
     KB_ClearKeysDown();
 
     menu_ResetZoom();
-    char gamefunctions[][32] = { "Move_Forward",
-                                 "Move_Backward",
-                                 "Turn_Left",
-                                 "Turn_Right",
-                                 "Strafe",
-                                 "Strafe_Left",
-                                 "Strafe_Right",
-                                 "Run",
-                                 "Jump",
-                                 "Crouch",
-                                 "Fire",
-                                 "Open",
-                                 "Look_Up",
-                                 "Look_Down",
-                                 "Look_Straight",
-                                 "Aim_Up",
-                                 "Aim_Down",
-                                 "SendMessage",
-                                 "Weapon_1",
-                                 "Weapon_2",
-                                 "Weapon_3",
-                                 "Weapon_4",
-                                 "Weapon_5",
-                                 "Weapon_6",
-                                 "Weapon_7",
-                                 "Pause",
-                                 "Map",
-                                 "Zoom_In",
-                                 "Zoom_Out",
-                                 "Gamma_Correction",
-                                 "Escape",
-                                 "Shrink_Screen",
-                                 "Enlarge_Screen",
-                                 "Inventory",
-                                 "Inventory_Left",
-                                 "Inventory_Right",
-                                 "Mouse_Sensitivity_Up",
-                                 "Mouse_Sensitivity_Down",
-                                 "Show_Console ",
-                                 "Mouse_Aiming",
-                                 "Toggle_Crosshair" };
-
+    
+    
+    
     int  gamefunctionsCount  = sizeof(gamefunctions[0]) / sizeof(gamefunctions[0][32]);
 
     short ptr[42];
@@ -1727,7 +1691,7 @@ void menu_PlayerOptions()
             // mercury DrawMenu
 
 
-            char *ptr   = gamefunctions[j];
+            const char *ptr   = gamefunctions[j];
             int   nTile = -1;
             int   nMaxX = 0;
             x           = maxX ;
